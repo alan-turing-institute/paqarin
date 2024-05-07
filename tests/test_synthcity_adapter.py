@@ -1,4 +1,5 @@
 """Tests for the synthcity_adapter module."""
+
 from unittest.mock import MagicMock, patch
 
 import pandas as pd

@@ -12,7 +12,9 @@ from keras.callbacks import EarlyStopping  # type: ignore
 from keras.layers import LSTM, Dense  # type: ignore
 from keras.losses import MeanAbsoluteError  # type: ignore
 from keras.models import Sequential  # type: ignore
-from keras.optimizers import Adam  # type: ignore
+
+# Using the legacy optimiser since running on an M1 Mac.
+from keras.optimizers.legacy import Adam  # type: ignore
 from sklearn.metrics import mean_absolute_error  # type: ignore
 
 from paqarin import ydata_adapter

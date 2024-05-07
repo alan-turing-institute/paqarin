@@ -1,4 +1,5 @@
 """Tests for the sdv_adapter module."""
+
 from datetime import datetime
 from typing import Optional
 from unittest.mock import MagicMock, patch

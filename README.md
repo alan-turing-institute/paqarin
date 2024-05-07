@@ -3,13 +3,17 @@
 
 ## Installation
 
-Paqarin was tested using **Python 3.11**.
+Paqarin was tested using **Python 3.10**.
 We strongly suggest you to create a virtual environment for running this code.
 For creating the `.venv` environment, do the following:
 
 ```
 python -m venv .venv
 ```
+
+Paqarin relies on AutoGluon for utility evaluation. As such, we expect you to have [OpenMP installed in your system](https://uk.mathworks.com/help/coder/ug/install-openmp-library-on-macos-platform.html).
+Also, the installation of [LightGBM might be problematic, if working on a MacBook with M1](https://stackoverflow.com/questions/47098281/during-installation-of-lightgbm-it-says-that-you-should-install-cmake-first-whi).
+
 
 Once created, activate it and install the Paqarin package using the `install_paqarin.bat` script:
 

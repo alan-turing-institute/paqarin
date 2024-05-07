@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+
+[project]
+name = "paqarin"
+version = "0.0.1"
+authors = [
+    { name = "Carlos Gavidia-Calderon", email = "carlos.gavidia-calderon@turing.ac.uk" },
+]
+description = "A library for the generation of synthetic time series data."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "ydata_synthetic",
+    "sdv",
+    "synthcity==0.2.10",
+    "seaborn",
+    "autogluon.timeseries",
+    "dask",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "mypy",
+    "flake8",
+    "pandas-stubs",
+    "isort",
+    "pytest",
+    "pytest-cov",
+]
+
+[tool.pytest.ini_options]
+pythonpath = [".", "paqarin"]
+
+[tool.setuptools]
+py-modules = ["paqarin"]

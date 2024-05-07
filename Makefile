@@ -1,8 +1,8 @@
 install:
-	python -m pip install -r requirements.txt
+	python -m pip install --editable .
 
 install-optional:
-	python -m pip install -r optional-requirements.txt
+	python -m pip install .[dev]
 
 .PHONY: lint
 lint:
@@ -22,4 +22,5 @@ test:
 
 .PHONY: checklist
 checklist: format lint typehint test
+
 

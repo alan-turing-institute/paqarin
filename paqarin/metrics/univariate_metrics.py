@@ -73,7 +73,7 @@ class AutoGluonDataTransformer:
         logging.info(
             f"Setting up frequency {self.frequency} and filling missing values"
         )
-        timeseries_dataframe = timeseries_dataframe.convert_frequency(
+        timeseries_dataframe = timeseries_dataframe.to_regular_index(
             freq=self.frequency
         )
 
@@ -158,7 +158,8 @@ class AutoGluonPredictiveScorer(BasePredictiveScorer):
         self.testing_time_series: Optional[TimeSeriesDataFrame] = None
 
         super().__init__(
-            iterations=iterations, metric_value_key=self.forecasting_evaluation_metric
+            iterations=iterations,
+            metric_value_key=self.forecasting_evaluation_metric,
         )
 
     def calculate(
@@ -221,7 +222,8 @@ class AutoGluonPredictiveScorer(BasePredictiveScorer):
                 logging.info(f"Synthetic data loaded from: {synthetic_data_file}")
             else:
                 synthetic_dataframe = self.generate_synthetic_data(
-                    generator_name=generator_name, generator_instance=generator_instance
+                    generator_name=generator_name,
+                    generator_instance=generator_instance,
                 )
                 synthetic_dataframe.to_csv(synthetic_data_file)
                 logging.info(f"Synthetic data stored at from: {synthetic_data_file}")
@@ -402,9 +404,13 @@ class AutoGluonPredictiveScorer(BasePredictiveScorer):
         evaluation_data: TimeSeriesDataFrame,
     ) -> tuple[TimeSeriesDataFrame, TimeSeriesDataFrame]:
         """Splits data into training and testing."""
-        return evaluation_data.train_test_split(
-            prediction_length=self.prediction_length
+
+        test_data: TimeSeriesDataFrame = evaluation_data.slice_by_timestep(None, None)
+        train_data: TimeSeriesDataFrame = test_data.slice_by_timestep(
+            None, -self.prediction_length
         )
+
+        return train_data, test_data
 
     def register_prediction_results(
         self,
@@ -464,17 +470,30 @@ def plot_forecast(
         past_values: np.ndarray = training_data.loc[item_id][target_column]
         axis.set_title(f"Item: {item_id}")
 
-        axis.plot(past_values, marker=MARKER, linestyle=LINE_STYLE, label="Past values")
+        axis.plot(
+            past_values,
+            marker=MARKER,
+            linestyle=LINE_STYLE,
+            label="Past values",
+        )
 
         forecast_mean: np.ndarray = forecast_data.loc[item_id]["mean"]
         axis.plot(
-            forecast_mean, marker=MARKER, linestyle=LINE_STYLE, label="Mean forecast"
+            forecast_mean,
+            marker=MARKER,
+            linestyle=LINE_STYLE,
+            label="Mean forecast",
         )
 
         real_values: np.ndarray = testing_data.loc[item_id][target_column][
             -prediction_length:
         ]
-        axis.plot(real_values, marker=MARKER, linestyle=LINE_STYLE, label="Real values")
+        axis.plot(
+            real_values,
+            marker=MARKER,
+            linestyle=LINE_STYLE,
+            label="Real values",
+        )
 
         axis.fill_between(
             forecast_data.loc[item_id].index,

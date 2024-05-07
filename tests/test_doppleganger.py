@@ -1,4 +1,5 @@
 """Tests for the doppleganger module."""
+
 from unittest.mock import MagicMock, patch
 
 import pandas as pd

@@ -1,4 +1,5 @@
 """Tests for the PAR module."""
+
 from typing import Optional
 from unittest.mock import MagicMock, patch
 

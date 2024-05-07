@@ -1,4 +1,5 @@
 """Tests for the data_utils module."""
+
 import pandas as pd
 
 from paqarin.utils import add_surrogate_key

@@ -1,4 +1,5 @@
 """Module for plotting multivariate time series and its synthetic data generation."""
+
 import itertools
 from typing import List
 
@@ -34,7 +35,9 @@ def plot_multivariate_time_series(
 
 
 def plot_and_compare(
-    real_sequence: np.ndarray, synthetic_sequence: np.ndarray, columns: List[str]
+    real_sequence: np.ndarray,
+    synthetic_sequence: np.ndarray,
+    columns: List[str],
 ) -> None:
     """Plots a real multivariate sequence against a synthetic one, one plot per column."""
     for column_index, column_name in enumerate(columns):
@@ -58,7 +61,10 @@ def plot_column_comparison(
     )
 
     data_frame.plot(
-        title=column_name, marker=MARKER, linestyle=LINE_STYLE, figsize=figure_size
+        title=column_name,
+        marker=MARKER,
+        linestyle=LINE_STYLE,
+        figsize=figure_size,
     )
 
 
@@ -96,4 +102,7 @@ def plot_metrics(metric_manager: MetricManager, metric: str):
     )
 
     plt.boxplot(data_for_plot)
-    plt.xticks(range(1, len(data_for_plot.columns) + 1), data_for_plot.columns)
+    plt.xticks(
+        range(1, len(data_for_plot.columns) + 1),
+        data_for_plot.columns.to_list(),
+    )

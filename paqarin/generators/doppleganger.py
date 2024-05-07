@@ -64,9 +64,9 @@ class DoppleGanGerParameters(GeneratorParameters):
         self.batch_size: Optional[int] = batch_size
         self.learning_rate: Optional[float] = learning_rate
         self.latent_dimension: Optional[int] = latent_dimension
-        self.exponential_decay_rates: Optional[
-            Tuple[float, float]
-        ] = exponential_decay_rates
+        self.exponential_decay_rates: Optional[Tuple[float, float]] = (
+            exponential_decay_rates
+        )
         self.wgan_weight: Optional[float] = wgan_weight
         self.packing_degree: Optional[int] = packing_degree
         self.epochs: Optional[int] = epochs
@@ -162,9 +162,9 @@ class DoppleGangerGenerator(TimeSeriesGenerator):
             self._generator, number_of_sequences
         )  # type: ignore
 
-        current_transformer: Optional[
-            GeneratorTransformer
-        ] = self.generator_adapter.transformer
+        current_transformer: Optional[GeneratorTransformer] = (
+            self.generator_adapter.transformer
+        )
 
         if current_transformer is not None:
             generated_sequences = current_transformer.inverse_transform(

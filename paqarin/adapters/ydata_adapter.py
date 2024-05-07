@@ -1,4 +1,5 @@
 """Adapter for ydata-synthetic generator implementations."""
+
 import logging
 import pickle
 from typing import Any, List, Optional, Union
@@ -81,10 +82,10 @@ class DoppleGanGerTransformer(GeneratorTransformer):
         for scaled_data in processed_data:
             inverse_transformed_data: pd.DataFrame = scaled_data.copy()
 
-            inverse_transformed_data[
-                self.numerical_columns
-            ] = self.min_max_scaler.inverse_transform(
-                inverse_transformed_data[self.numerical_columns]
+            inverse_transformed_data[self.numerical_columns] = (
+                self.min_max_scaler.inverse_transform(
+                    inverse_transformed_data[self.numerical_columns]
+                )
             )
 
             descaled_data.append(inverse_transformed_data)

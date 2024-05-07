@@ -1,4 +1,5 @@
 """Tests for the adapter module."""
+
 from paqarin import synthcity_adapter, ydata_adapter
 from paqarin.adapter import Method, Provider, get_generator_adapter
 from paqarin.generators import ParParameters, TimeGanParameters

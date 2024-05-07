@@ -1,4 +1,5 @@
 """Abstractions related to the TimeGAN approach to synthetic time generation."""
+
 import logging
 from typing import Any, List, Optional
 
@@ -150,9 +151,9 @@ class TimeGanGenerator(TimeSeriesGenerator):
 
     def save_transformer(self) -> None:
         """Saves the transformer to a file."""
-        transformer_to_save: Optional[
-            GeneratorTransformer
-        ] = self.generator_adapter.transformer
+        transformer_to_save: Optional[GeneratorTransformer] = (
+            self.generator_adapter.transformer
+        )
         if (
             (transformer_to_save is not None)
             and (not isinstance(transformer_to_save, DummyTransformer))
@@ -175,9 +176,9 @@ class TimeGanGenerator(TimeSeriesGenerator):
             self._generator, number_of_sequences
         )  # type: ignore
 
-        current_transformer: Optional[
-            GeneratorTransformer
-        ] = self.generator_adapter.transformer
+        current_transformer: Optional[GeneratorTransformer] = (
+            self.generator_adapter.transformer
+        )
         # TODO: We can refactor this logic.
         if (current_transformer is not None) and (
             not isinstance(current_transformer, DummyTransformer)
