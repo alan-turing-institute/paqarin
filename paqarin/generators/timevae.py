@@ -1,4 +1,4 @@
-"""Abstractions related to the TimeGAN approach to synthetic time generation."""
+"""Abstractions related to the TimeVAE approach to synthetic time generation."""
 
 import logging
 from typing import Any, List, Optional
@@ -21,7 +21,7 @@ from paqarin.generator import (
 )
 
 
-class TimeGanParameters(GeneratorParameters):
+class TimeVaeParameters(GeneratorParameters):
     """The parameters of the model and the training process.
 
     Attributes:
@@ -53,7 +53,7 @@ class TimeGanParameters(GeneratorParameters):
         layers_dimension: Optional[int] = None,
         filename: Optional[str] = None,
     ):
-        """Inits TimeGAN Parameters."""
+        """Inits TimeVAE Parameters."""
         self.batch_size = batch_size
         # TODO: LR Seems to be very influential in model performance!
         # Let's explore how to fine-tune it.
@@ -80,25 +80,25 @@ class TimeGanParameters(GeneratorParameters):
         self._filename = value
 
 
-class TimeGanGenerator(TimeSeriesGenerator):
-    """Wrapper class for implementations of the TimeGAN approach."""
+class TimeVaeGenerator(TimeSeriesGenerator):
+    """Wrapper class for implementations of the TimeVAE approach."""
 
     def __init__(
         self,
         provider: str,
-        generator_parameters: TimeGanParameters,
+        generator_parameters: TimeVaeParameters,
         generator: Optional[Any] = None,
         transformer: Optional[GeneratorTransformer] = None,
     ):
-        """Inits the TimeGAN generator."""
+        """Inits the TimeVAE generator."""
         self._generator: Optional[Any] = generator
         self._provider: str = provider
 
-        self._parameters: TimeGanParameters = generator_parameters
+        self._parameters: TimeVaeParameters = generator_parameters
 
         self.generator_adapter: TimeSeriesGeneratorAdapter = get_generator_adapter(
             provider=Provider(provider),
-            method=Method.TIME_GAN,
+            method=Method.TIME_VAE,
             generator_parameters=generator_parameters,
             transformer=transformer,
         )
@@ -119,12 +119,12 @@ class TimeGanGenerator(TimeSeriesGenerator):
         return self.generator_adapter.transformer
 
     @property
-    def parameters(self) -> TimeGanParameters:
+    def parameters(self) -> TimeVaeParameters:
         """Returns the parameter values."""
         return self._parameters
 
     def fit(self, training_data: pd.DataFrame, **training_arguments: Any) -> None:
-        """Trains a TimeGAN generator for synthetic time series."""
+        """Trains a TimeVAE generator for synthetic time series."""
         keras.backend.clear_session()
 
         # YData does not need preprocessing for training
@@ -145,7 +145,7 @@ class TimeGanGenerator(TimeSeriesGenerator):
         file_name: str = self._parameters.filename
         if self._generator is not None:
             self.generator_adapter.save_generator(self._generator, file_name)
-            logging.info("TimeGAN from %s was saved at %s", self._provider, file_name)
+            logging.info("TimeVAE from %s was saved at %s", self._provider, file_name)
         else:
             logging.info("The generator wasn't trained.")
 
