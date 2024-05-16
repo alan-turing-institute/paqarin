@@ -26,6 +26,7 @@ class Method(Enum):
     """The algorithm for synthetic time series generation."""
 
     TIME_GAN: str = "timegan"
+    TIME_VAE: str = "timevae"
     DOPPLEGANGER: str = "doppleganger"
     PAR: str = "par"
 
