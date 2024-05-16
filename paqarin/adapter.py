@@ -87,6 +87,10 @@ def get_generator_adapter(
 
         if method.value == Method.TIME_GAN.value:
             return synthcity_adapter.TimeGanGeneratorAdapter(generator_parameters)
+
+        elif method.value == Method.TIME_VAE.value:
+            return synthcity_adapter.TimeVaeGeneratorAdapter(generator_parameters)
+
     elif provider.value == Provider.SDV.value:
         from paqarin import sdv_adapter
 
