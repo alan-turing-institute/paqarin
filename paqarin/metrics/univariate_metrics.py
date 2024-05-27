@@ -6,7 +6,7 @@ It uses AutoGluon in univariate time series forecasting tasks
 import logging
 import os.path
 import traceback
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 import matplotlib.pyplot as plt  # type: ignore
 import numpy as np
@@ -62,12 +62,16 @@ class AutoGluonDataTransformer:
         )
 
         logging.info("From DataFrame to TimeSeriesDataFrame")
-        timeseries_dataframe: TimeSeriesDataFrame = TimeSeriesDataFrame.from_data_frame(
-            transformed_dataframe
+        timeseries_dataframe: TimeSeriesDataFrame = (
+            TimeSeriesDataFrame.from_data_frame(transformed_dataframe)
         )
 
-        duplicate_rows: np.ndarray = timeseries_dataframe.index.duplicated(keep="first")
-        logging.info(f"Removing {duplicate_rows.sum()} rows with duplicate indexes")
+        duplicate_rows: np.ndarray = timeseries_dataframe.index.duplicated(
+            keep="first"
+        )
+        logging.info(
+            f"Removing {duplicate_rows.sum()} rows with duplicate indexes"
+        )
         timeseries_dataframe = timeseries_dataframe[~duplicate_rows]
 
         logging.info(
@@ -86,7 +90,8 @@ class AutoGluonDataTransformer:
             is None
         ]
         logging.info(
-            f"Removing {len(items_without_frequency)} " "because of missing frequencies"
+            f"Removing {len(items_without_frequency)} "
+            "because of missing frequencies"
         )
 
         timeseries_dataframe = timeseries_dataframe.drop(
@@ -110,14 +115,18 @@ class AutoGluonDataTransformer:
     ) -> str:
         """Returns the frequency of the provided timeseries."""
         item_data: TimeSeriesDataFrame = timeseries_dataframe.loc[item_id]
-        item_frequency: str = item_data.index.freq or item_data.index.inferred_freq
+        item_frequency: str = (
+            item_data.index.freq or item_data.index.inferred_freq
+        )
 
         return item_frequency
 
     def add_known_covariates(self, timeseries_dataframe: TimeSeriesDataFrame):
         """Adds a weekend covariate to the provided time series."""
         # TODO: Maybe a more general way of adding covariates?
-        timestamps = timeseries_dataframe.index.get_level_values(TIMESTAMP_COLUMN)
+        timestamps = timeseries_dataframe.index.get_level_values(
+            TIMESTAMP_COLUMN
+        )
         timeseries_dataframe[self.covariate_column] = timestamps.weekday.isin(
             self.weekend_indices
         ).astype(float)
@@ -152,7 +161,9 @@ class AutoGluonPredictiveScorer(BasePredictiveScorer):
         self.predictor_verbosity: int = predictor_verbosity
 
         self.transformer: AutoGluonDataTransformer = transformer
-        self.generation_arguments: Optional[dict[str, Any]] = generation_arguments
+        self.generation_arguments: Optional[dict[str, Any]] = (
+            generation_arguments
+        )
 
         self.training_time_series: Optional[TimeSeriesDataFrame] = None
         self.testing_time_series: Optional[TimeSeriesDataFrame] = None
@@ -171,8 +182,12 @@ class AutoGluonPredictiveScorer(BasePredictiveScorer):
         """Calculates the predictive score, given the evaluation data provided."""
         logging.info(f"Reusing previous training files: {self.reuse_files}")
 
-        training_file_name: str = f"{generator_name}/{generator_name}_training_data.csv"
-        testing_file_name: str = f"{generator_name}/{generator_name}_testing_data.csv"
+        training_file_name: str = (
+            f"{generator_name}/{generator_name}_training_data.csv"
+        )
+        testing_file_name: str = (
+            f"{generator_name}/{generator_name}_testing_data.csv"
+        )
 
         if self.reuse_files:
             self.training_time_series = pd.read_csv(training_file_name)
@@ -185,7 +200,9 @@ class AutoGluonPredictiveScorer(BasePredictiveScorer):
             (
                 self.training_time_series,
                 self.testing_time_series,
-            ) = self.split_time_series(self.transformer.transform(evaluation_data))
+            ) = self.split_time_series(
+                self.transformer.transform(evaluation_data)
+            )
 
             self.training_time_series.to_csv(training_file_name)
             logging.info(
@@ -219,18 +236,22 @@ class AutoGluonPredictiveScorer(BasePredictiveScorer):
 
             if self.reuse_files and os.path.isfile(synthetic_data_file):
                 synthetic_dataframe = pd.read_csv(synthetic_data_file)
-                logging.info(f"Synthetic data loaded from: {synthetic_data_file}")
+                logging.info(
+                    f"Synthetic data loaded from: {synthetic_data_file}"
+                )
             else:
                 synthetic_dataframe = self.generate_synthetic_data(
                     generator_name=generator_name,
                     generator_instance=generator_instance,
                 )
                 synthetic_dataframe.to_csv(synthetic_data_file)
-                logging.info(f"Synthetic data stored at from: {synthetic_data_file}")
+                logging.info(
+                    f"Synthetic data stored at from: {synthetic_data_file}"
+                )
 
             try:
-                synthetic_time_series: TimeSeriesDataFrame = self.transformer.transform(
-                    synthetic_dataframe
+                synthetic_time_series: TimeSeriesDataFrame = (
+                    self.transformer.transform(synthetic_dataframe)
                 )
 
                 synthetic_training_series, _ = self.split_time_series(
@@ -273,7 +294,9 @@ class AutoGluonPredictiveScorer(BasePredictiveScorer):
         predictions_csv_file: str = (
             f"{generator_name}/{iteration}_{generator_name}_forecasting.csv"
         )
-        model_directory: str = f"{generator_name}/{iteration}_{generator_name}_model"
+        model_directory: str = (
+            f"{generator_name}/{iteration}_{generator_name}_model"
+        )
 
         trained_model: TimeSeriesPredictor
         model_forecasting: TimeSeriesDataFrame
@@ -285,7 +308,9 @@ class AutoGluonPredictiveScorer(BasePredictiveScorer):
                 f"loaded from {model_directory}"
             )
 
-            model_forecasting = TimeSeriesDataFrame.from_path(predictions_csv_file)
+            model_forecasting = TimeSeriesDataFrame.from_path(
+                predictions_csv_file
+            )
             logging.info(
                 f"Forecasting for {generator_name} at iteration {iteration} "
                 f"loaded from {predictions_csv_file}"
@@ -341,7 +366,9 @@ class AutoGluonPredictiveScorer(BasePredictiveScorer):
                     self.number_of_sequences
                 )
 
-        synthetic_dataframe: pd.DataFrame = pd.concat(synthetic_sequences, axis=0)
+        synthetic_dataframe: pd.DataFrame = pd.concat(
+            synthetic_sequences, axis=0
+        )
         synthetic_dataframe = synthetic_dataframe.reset_index(drop=True)
 
         return synthetic_dataframe
@@ -375,8 +402,10 @@ class AutoGluonPredictiveScorer(BasePredictiveScorer):
         time_series_dataframe: TimeSeriesDataFrame,
     ) -> TimeSeriesDataFrame:
         """Generates a forecast using an AutoGluon, for the provided dataframe."""
-        forecast_index: pd.MultiIndex = get_forecast_horizon_index_ts_dataframe(
-            time_series_dataframe, prediction_length=self.prediction_length
+        forecast_index: pd.MultiIndex = (
+            get_forecast_horizon_index_ts_dataframe(
+                time_series_dataframe, prediction_length=self.prediction_length
+            )
         )
 
         forecast_covariates: TimeSeriesDataFrame = TimeSeriesDataFrame(
@@ -390,12 +419,19 @@ class AutoGluonPredictiveScorer(BasePredictiveScorer):
             known_covariates=forecast_covariates,
         )
 
-    def create_forecasting_model(self, model_directory: str) -> TimeSeriesPredictor:
+    def create_forecasting_model(
+        self, model_directory: str
+    ) -> TimeSeriesPredictor:
         """Creates an AutoGluon predictor instance."""
+
+        known_covariates_names: Optional[list[str]] = None
+        if self.transformer.covariate_column:
+            known_covariates_names = [self.transformer.covariate_column]
+
         return TimeSeriesPredictor(
             path=model_directory,
             prediction_length=self.prediction_length,
-            known_covariates_names=[self.transformer.covariate_column],
+            known_covariates_names=known_covariates_names,
             eval_metric=self.forecasting_evaluation_metric,
         )
 
@@ -405,7 +441,9 @@ class AutoGluonPredictiveScorer(BasePredictiveScorer):
     ) -> tuple[TimeSeriesDataFrame, TimeSeriesDataFrame]:
         """Splits data into training and testing."""
 
-        test_data: TimeSeriesDataFrame = evaluation_data.slice_by_timestep(None, None)
+        test_data: TimeSeriesDataFrame = evaluation_data.slice_by_timestep(
+            None, None
+        )
         train_data: TimeSeriesDataFrame = test_data.slice_by_timestep(
             None, -self.prediction_length
         )
@@ -421,10 +459,18 @@ class AutoGluonPredictiveScorer(BasePredictiveScorer):
         predicted_time_series: TimeSeriesDataFrame,
     ):
         """Calculates and stores forecasting metrics."""
-        scores_dictionary: dict = forecasting_model.evaluate(testing_time_series)
+        scores_dictionary: Union[int, dict] = forecasting_model.evaluate(
+            testing_time_series
+        )
+        if type(scores_dictionary) is not dict:
+            scores_dictionary = {
+                self.forecasting_evaluation_metric: scores_dictionary
+            }
+
         metrics_csv_file: str = (
             f"{generator_name}/{iteration}_{generator_name}_metrics.csv"
         )
+
         pd.DataFrame.from_dict(scores_dictionary, orient="index").to_csv(
             metrics_csv_file
         )
@@ -433,7 +479,9 @@ class AutoGluonPredictiveScorer(BasePredictiveScorer):
             f"saved at {metrics_csv_file}"
         )
 
-        metric_on_testing: float = scores_dictionary[self.forecasting_evaluation_metric]
+        metric_on_testing: float = scores_dictionary[
+            self.forecasting_evaluation_metric
+        ]
         logging.info(
             f"Registering forecasting results for {generator_name=}"
             f" {self.forecasting_evaluation_metric}"
@@ -445,7 +493,9 @@ class AutoGluonPredictiveScorer(BasePredictiveScorer):
             TRAINING_PREDICTIONS: predicted_time_series,
         }
 
-        self.metric_manager.register_iteration(generator_name, iteration_metrics)
+        self.metric_manager.register_iteration(
+            generator_name, iteration_metrics
+        )
 
 
 def plot_forecast(
