@@ -9,6 +9,7 @@ print("Defining Generator")
 timevae_generator = TimeVaeGenerator(
     provider="synthcity",
     generator_parameters=TimeVaeParameters(
+##        item_id_column, timestamp_column, numerical_columns
 #        categorical_columns=["isp", "technology", "state"],
 #        measurement_columns=["traffic_byte_counter", "ping_loss_rate"],
 #        packing_degree=1,
