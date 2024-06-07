@@ -8,12 +8,14 @@ import pandas as pd
 from synthcity.plugins import Plugins  # type: ignore
 from synthcity.plugins.core.dataloader import TimeSeriesDataLoader  # type: ignore
 from synthcity.plugins.time_series.plugin_timegan import TimeGANPlugin  # type: ignore
+from synthcity.plugins.time_series.plugin_timevae import TimeVAEPlugin  # type: ignore
 from synthcity.utils.serialization import load_from_file  # type: ignore
 from synthcity.utils.serialization import save_to_file
 
 from paqarin.adapter import Provider, TimeSeriesGeneratorAdapter
 from paqarin.generator import SURROGATE_ITEM_ID, GeneratorTransformer
 from paqarin.generators import TimeGanGenerator, TimeGanParameters
+from paqarin.generators import TimeVaeGenerator, TimeVaeParameters
 from paqarin.utils import add_surrogate_key, normalise_sequences
 
 OUTCOME_COLUMN: str = "outcome"
