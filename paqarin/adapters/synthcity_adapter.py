@@ -299,13 +299,16 @@ class TimeVaeGeneratorAdapter(TimeSeriesGeneratorAdapter):
             **training_arguments,
         )
 
+        if len(static_data)==1:
+            # there is no difference in static data
+            static_data = None
         data_loader: TimeSeriesDataLoader = TimeSeriesDataLoader(
             temporal_data=temporal_data,
             observation_times=observation_data,
             static_data=static_data,
             outcome=outcome,
         )
-
+        # TODO: Remove un-needed arguments here
         time_vae_plugin: TimeVAEPlugin = Plugins().get(
             "timevae",
             n_iter=generator_parameters.epochs,
