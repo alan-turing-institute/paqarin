@@ -6,7 +6,7 @@ It uses AutoGluon in univariate time series forecasting tasks
 import logging
 import os.path
 import traceback
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 import matplotlib.pyplot as plt  # type: ignore
 import numpy as np
@@ -98,8 +98,11 @@ class AutoGluonDataTransformer:
             method="constant"
         )
 
-        logging.info("Adding known covariates")
-        self.add_known_covariates(timeseries_dataframe)
+        if self.covariate_column:
+            logging.info("Adding known covariates")
+            self.add_known_covariates(timeseries_dataframe)
+        else:
+            logging.info("No covariates to add")
 
         logging.info(f"Final timeseries size: {len(timeseries_dataframe)}")
         return timeseries_dataframe
@@ -175,8 +178,12 @@ class AutoGluonPredictiveScorer(BasePredictiveScorer):
         testing_file_name: str = f"{generator_name}/{generator_name}_testing_data.csv"
 
         if self.reuse_files:
-            self.training_time_series = pd.read_csv(training_file_name)
-            self.testing_time_series = pd.read_csv(testing_file_name)
+            self.training_time_series = TimeSeriesDataFrame.from_data_frame(
+                pd.read_csv(training_file_name)
+            )
+            self.testing_time_series = TimeSeriesDataFrame.from_data_frame(
+                pd.read_csv(testing_file_name)
+            )
             logging.info(
                 f"Training data loaded from {training_file_name}. "
                 f"Testing data loaded from: {testing_file_name}"
@@ -206,7 +213,9 @@ class AutoGluonPredictiveScorer(BasePredictiveScorer):
                 )
 
                 self.train_predict_and_register(
-                    iteration, train_on_real_key, self.training_time_series
+                    iteration,
+                    train_on_real_key,
+                    self.training_time_series,
                 )
 
             self.update_summary_metrics(train_on_real_key)
@@ -267,7 +276,10 @@ class AutoGluonPredictiveScorer(BasePredictiveScorer):
             self.best_generator_value = average_metric
 
     def train_predict_and_register(
-        self, iteration: int, generator_name: str, training_data: pd.DataFrame
+        self,
+        iteration: int,
+        generator_name: str,
+        training_data: TimeSeriesDataFrame,
     ) -> None:
         """Trains a generator, generates synthetic data, forecast and register results."""
         predictions_csv_file: str = (
@@ -313,7 +325,6 @@ class AutoGluonPredictiveScorer(BasePredictiveScorer):
             iteration,
             generator_name,
             trained_model,
-            training_data,
             model_forecasting,
         )
 
@@ -379,11 +390,13 @@ class AutoGluonPredictiveScorer(BasePredictiveScorer):
             time_series_dataframe, prediction_length=self.prediction_length
         )
 
-        forecast_covariates: TimeSeriesDataFrame = TimeSeriesDataFrame(
-            pd.DataFrame(index=forecast_index)
-        )
+        forecast_covariates: Optional[TimeSeriesDataFrame] = None
 
-        self.transformer.add_known_covariates(forecast_covariates)
+        if self.transformer.covariate_column is not None:
+            forecast_covariates = TimeSeriesDataFrame(
+                pd.DataFrame(index=forecast_index)
+            )
+            self.transformer.add_known_covariates(forecast_covariates)
 
         return forecasting_model.predict(
             time_series_dataframe,
@@ -392,10 +405,15 @@ class AutoGluonPredictiveScorer(BasePredictiveScorer):
 
     def create_forecasting_model(self, model_directory: str) -> TimeSeriesPredictor:
         """Creates an AutoGluon predictor instance."""
+
+        known_covariates_names: Optional[list[str]] = None
+        if self.transformer.covariate_column:
+            known_covariates_names = [self.transformer.covariate_column]
+
         return TimeSeriesPredictor(
             path=model_directory,
             prediction_length=self.prediction_length,
-            known_covariates_names=[self.transformer.covariate_column],
+            known_covariates_names=known_covariates_names,
             eval_metric=self.forecasting_evaluation_metric,
         )
 
@@ -417,14 +435,23 @@ class AutoGluonPredictiveScorer(BasePredictiveScorer):
         iteration: int,
         generator_name: str,
         forecasting_model: TimeSeriesPredictor,
-        testing_time_series: TimeSeriesDataFrame,
         predicted_time_series: TimeSeriesDataFrame,
     ):
         """Calculates and stores forecasting metrics."""
-        scores_dictionary: dict = forecasting_model.evaluate(testing_time_series)
+
+        if self.testing_time_series is None:
+            raise ValueError("No testing data available for evaluation.")
+
+        scores_dictionary: Union[int, dict] = forecasting_model.evaluate(
+            self.testing_time_series
+        )
+        if type(scores_dictionary) is not dict:
+            scores_dictionary = {self.forecasting_evaluation_metric: scores_dictionary}
+
         metrics_csv_file: str = (
             f"{generator_name}/{iteration}_{generator_name}_metrics.csv"
         )
+
         pd.DataFrame.from_dict(scores_dictionary, orient="index").to_csv(
             metrics_csv_file
         )

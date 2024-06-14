@@ -120,14 +120,28 @@ def test_predictive_scorer() -> None:
         return_value={forecasting_evaluation_metric: metric_value}
     )
 
-    testing_time_series: pd.DataFrame = pd.DataFrame()
-    predicted_time_series: pd.DataFrame = pd.DataFrame()
+    testing_time_series: pd.DataFrame = TimeSeriesDataFrame.from_data_frame(
+        pd.DataFrame(
+            {
+                univariate_metrics.ITEM_ID_COLUMN: [],
+                univariate_metrics.TIMESTAMP_COLUMN: [],
+            }
+        )
+    )
+    predicted_time_series: pd.DataFrame = TimeSeriesDataFrame.from_data_frame(
+        pd.DataFrame(
+            {
+                univariate_metrics.ITEM_ID_COLUMN: [],
+                univariate_metrics.TIMESTAMP_COLUMN: [],
+            }
+        )
+    )
     iteration: int = 0
+    predictive_scorer.testing_time_series = testing_time_series
     predictive_scorer.register_prediction_results(
         iteration,
         generator_name,
         mock_forecasting_model,
-        testing_time_series,
         predicted_time_series,
     )
     mock_forecasting_model.evaluate.assert_called_once_with(testing_time_series)
