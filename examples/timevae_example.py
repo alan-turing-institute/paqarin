@@ -1,8 +1,11 @@
 """Example of synthetic data generation using DoppleGANger."""
+import sys
+sys.path.append("../")
 
+import paqarin
 from paqarin.generators import TimeVaeGenerator, TimeVaeParameters
 from paqarin.evaluation import EvaluationPipeline
-from paqarin import multivariate_metrics
+from paqarin.metrics import multivariate_metrics
 import pandas as pd
 
 print("Defining Generator")
