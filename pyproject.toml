@@ -12,7 +12,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "ydata_synthetic",
-    "sdv",
+    "sdv==1.8.0",
     "synthcity==0.2.10",
     "seaborn",
     "autogluon.timeseries",
