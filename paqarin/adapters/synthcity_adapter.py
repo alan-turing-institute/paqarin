@@ -171,7 +171,9 @@ class TimeGanGeneratorAdapter(TimeSeriesGeneratorAdapter):
         ]
 
     @staticmethod
-    def load_generator(generator_parameters: TimeGanParameters) -> TimeGanGenerator:
+    def load_generator(
+        generator_parameters: TimeGanParameters,
+    ) -> TimeGanGenerator:
         """WARNING: Memory hungry method. It can take 2GB of your RAM."""
         time_gan_plugin: TimeGANPlugin = load_from_file(generator_parameters.filename)
         logging.info(
@@ -192,11 +194,16 @@ def preprocess_data(
     raw_data: pd.DataFrame,
     nan_value: Any = 0.0,
     date_format: str = "%d/%m/%Y",
+    frequency: str = "D",
 ) -> tuple[list[pd.DataFrame], list[list], pd.DataFrame, pd.DataFrame]:
     """Pre-process time series data according to Synthcity's requirements."""
-    # TODO: Experimental!!! make sequences the same size:
+    # TODO: Experimental!!! make sequences the same size.
     normalized_data, _, _ = normalise_sequences(
-        item_id_column, timestamp_column, "D", raw_data, date_format=date_format
+        item_id_column,
+        timestamp_column,
+        frequency,
+        raw_data,
+        date_format=date_format,
     )
     # Synthcity fails when using Timestamp values.
     normalized_data[timestamp_column] = normalized_data[timestamp_column].dt.strftime(
