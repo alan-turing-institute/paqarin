@@ -42,11 +42,13 @@ class TrainingMetadata:
         """Gets a generator instance from metadata."""
         if isinstance(self.generator_parameters, DoppleGanGerParameters):
             return DoppleGangerGenerator(
-                provider=self.provider, generator_parameters=self.generator_parameters
+                provider=self.provider,
+                generator_parameters=self.generator_parameters,
             )
         elif isinstance(self.generator_parameters, TimeGanParameters):
             return TimeGanGenerator(
-                provider=self.provider, generator_parameters=self.generator_parameters
+                provider=self.provider,
+                generator_parameters=self.generator_parameters,
             )
         else:
             raise ValueError("Cannot create a generator with the provided information")
@@ -69,6 +71,10 @@ class MetricManager:
 
     def get_all_values(self, generator_name: str, metric_key: str) -> list[float]:
         """Return the values of a metric over all iterations."""
+
+        if generator_name not in self.metrics_per_generator:
+            raise ValueError(f"There's no metric data for generator {generator_name}")
+
         all_values: list[float] = [
             iteration_metrics[metric_key]
             for iteration_metrics in self.metrics_per_generator[generator_name]
@@ -118,6 +124,7 @@ class BasePredictiveScorer(ABC):
 
     def update_summary_metrics(self, generator_name: str) -> None:
         """Registers consolidated metrics after multiple iteration runs."""
+
         self.summary_metrics.append(
             {
                 GENERATOR_NAME_KEY: generator_name,

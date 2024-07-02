@@ -20,7 +20,7 @@ from autogluon.timeseries.utils.forecast import (  # type: ignore
 
 from paqarin.evaluation import BasePredictiveScorer
 from paqarin.generator import TimeSeriesGenerator
-from paqarin.utils import LINE_STYLE, MARKER
+from paqarin.utils import LINE_STYLE, MARKER, data_utils
 
 from .multivariate_metrics import TRAINING_PREDICTIONS
 
@@ -62,8 +62,8 @@ class AutoGluonDataTransformer:
         )
 
         logging.info("From DataFrame to TimeSeriesDataFrame")
-        timeseries_dataframe: TimeSeriesDataFrame = TimeSeriesDataFrame.from_data_frame(
-            transformed_dataframe
+        timeseries_dataframe: Union[TimeSeriesDataFrame, pd.DataFrame] = (
+            TimeSeriesDataFrame.from_data_frame(transformed_dataframe)
         )
 
         duplicate_rows: np.ndarray = timeseries_dataframe.index.duplicated(keep="first")
@@ -73,8 +73,9 @@ class AutoGluonDataTransformer:
         logging.info(
             f"Setting up frequency {self.frequency} and filling missing values"
         )
-        timeseries_dataframe = timeseries_dataframe.to_regular_index(
-            freq=self.frequency
+
+        timeseries_dataframe = data_utils.to_regular_index(
+            timeseries_dataframe, self.frequency, ITEM_ID_COLUMN
         )
 
         items_without_frequency: list[str] = [

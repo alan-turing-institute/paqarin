@@ -1,10 +1,11 @@
 """Data processing functionality that's common to many data generation algorithms."""
 
 import logging
-from typing import Any, Literal
+from typing import Any, Literal, Union
 
 import numpy as np
 import pandas as pd
+from autogluon.timeseries import TimeSeriesDataFrame  # type: ignore
 
 from paqarin.generator import SURROGATE_ITEM_ID
 
@@ -22,7 +23,8 @@ def add_surrogate_key(
     }
 
     result[SURROGATE_ITEM_ID] = result.apply(
-        lambda row: item_to_index[tuple(row[list(item_id_columns)].values)], axis=1
+        lambda row: item_to_index[tuple(row[list(item_id_columns)].values)],
+        axis=1,
     )
 
     return result
@@ -37,6 +39,7 @@ def normalise_sequences(
     inclusive_range: Literal["both", "neither", "left", "right"] = "both",
 ) -> tuple[pd.DataFrame, int, int]:
     """Makes all sequences in the time series dataset to have the same length."""
+
     items_ids: np.ndarray = raw_data[item_id_column].unique()
 
     start_date = pd.to_datetime(
@@ -47,7 +50,10 @@ def normalise_sequences(
     ).floor("D")
     new_index: pd.DatetimeIndex = pd.DatetimeIndex(
         pd.date_range(
-            start=start_date, end=end_date, freq=frequency, inclusive=inclusive_range
+            start=start_date,
+            end=end_date,
+            freq=frequency,
+            inclusive=inclusive_range,
         ),
         name=timestamp_column,
     )
@@ -79,4 +85,27 @@ def normalise_sequences(
         pd.concat(sample_dataframes, ignore_index=True),
         len(items_ids),
         len(new_index),
+    )
+
+
+def to_regular_index(
+    timeseries_dataframe: Union[TimeSeriesDataFrame, pd.DataFrame],
+    frequency: str,
+    item_id_column: str,
+) -> TimeSeriesDataFrame:
+    """An implementation of TimeSeriesDataFrame.to_regular_index without error handling"""
+    filled_series: list[pd.DataFrame] = []
+    for item_id, time_series in timeseries_dataframe.groupby(
+        level=item_id_column, sort=False
+    ):
+        time_series = time_series.droplevel(item_id_column)
+        resampled_time_series: pd.DataFrame = time_series.resample(frequency).asfreq()
+
+        filled_series.append(
+            pd.concat({item_id: resampled_time_series}, names=[item_id_column])
+        )
+
+    return TimeSeriesDataFrame(
+        pd.concat(filled_series),
+        static_features=timeseries_dataframe.static_features,
     )
