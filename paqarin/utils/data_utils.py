@@ -62,14 +62,16 @@ def normalise_sequences(
 
     sample_dataframes: list[pd.DataFrame] = []
     for item_id in items_ids:
-        sample_rows: pd.DataFrame = raw_data.query(
-            f"{item_id_column} == '{item_id}'"
-        ).copy()
+        sample_rows: pd.DataFrame = raw_data.loc[
+            raw_data[item_id_column] == item_id
+        ].copy()
 
         sample_rows[timestamp_column] = pd.to_datetime(
             sample_rows[timestamp_column], format=date_format
         )
         sample_rows = sample_rows.set_index(timestamp_column)
+        if len(sample_rows.index) == 0:
+            raise ValueError(f"Cannot find values to time series with id {item_id}")
 
         sample_rows = (
             sample_rows.resample(frequency)

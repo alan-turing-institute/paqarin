@@ -197,6 +197,7 @@ def preprocess_data(
     frequency: str = "D",
 ) -> tuple[list[pd.DataFrame], list[list], pd.DataFrame, pd.DataFrame]:
     """Pre-process time series data according to Synthcity's requirements."""
+
     # TODO: Experimental!!! make sequences the same size.
     normalized_data, _, _ = normalise_sequences(
         item_id_column,
@@ -205,17 +206,20 @@ def preprocess_data(
         raw_data,
         date_format=date_format,
     )
+
     # Synthcity fails when using Timestamp values.
     normalized_data[timestamp_column] = normalized_data[timestamp_column].dt.strftime(
         date_format
     )
 
     extended_data: pd.DataFrame = add_surrogate_key((item_id_column,), normalized_data)
+
     extended_data = extended_data.fillna(nan_value)
 
     observation_data: list[list] = []
     temporal_data: list[pd.DataFrame] = []
     for item_id in extended_data[SURROGATE_ITEM_ID].unique():
+
         item_temporal_data: pd.DataFrame = extended_data[
             extended_data[SURROGATE_ITEM_ID] == item_id
         ]
